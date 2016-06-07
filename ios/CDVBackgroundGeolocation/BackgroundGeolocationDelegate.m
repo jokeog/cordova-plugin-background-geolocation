@@ -70,6 +70,7 @@
     NSString* activityType;
     BOOL stopOnTerminate;
     NSString* url;
+    NSMutableDictionary* httpHeaders;
 }
 
 @synthesize stationaryRegionListeners;
@@ -175,13 +176,16 @@
     if (config[@"url"]) {
         url = config[@"url"];
     }
+    if (config[@"httpHeaders"]) {
+        httpHeaders = config[@"httpHeaders"];
+    }
     
     locationManager.activityType = [self decodeActivityType:activityType];
     locationManager.pausesLocationUpdatesAutomatically = YES;
     locationManager.distanceFilter = distanceFilter; // meters
     locationManager.desiredAccuracy = desiredAccuracy;
 
-    NSLog(@"distanceFilter: %ld, stationaryRadius: %ld, locationTimeout: %ld, desiredAccuracy: %ld, activityType: %@, debug: %d, stopOnTerminate: %d, url: %@", (long)distanceFilter, (long)stationaryRadius, (long)locationTimeout, (long)desiredAccuracy, activityType, isDebugging, stopOnTerminate, url);
+    NSLog(@"distanceFilter: %ld, stationaryRadius: %ld, locationTimeout: %ld, desiredAccuracy: %ld, activityType: %@, debug: %d, stopOnTerminate: %d, url: %@, httpHeaders: %@", (long)distanceFilter, (long)stationaryRadius, (long)locationTimeout, (long)desiredAccuracy, activityType, isDebugging, stopOnTerminate, url, httpHeaders);
 
     // ios 8 requires permissions to send local-notifications
     if (isDebugging) {
@@ -922,13 +926,19 @@
 
 - (BOOL) postJSON:(NSMutableDictionary*)dictionary
 {
-    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:nil];
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:0 error:nil];
     NSString *jsonStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
     NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
     [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
     [request setHTTPMethod:@"POST"];
+    if (httpHeaders) {
+        for(id key in httpHeaders) {
+            id value = [httpHeaders objectForKey:key];
+            [request addValue:value forHTTPHeaderField:key];
+        }
+    }
     [request setHTTPBody:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
-
+    
     // Create url connection and fire request
     NSHTTPURLResponse* urlResponse = nil;
     NSError *error = nil;
