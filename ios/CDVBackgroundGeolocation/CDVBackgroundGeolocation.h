@@ -5,20 +5,12 @@
 //
 
 #import <Cordova/CDVPlugin.h>
-#import <CoreLocation/CoreLocation.h>
-#import <AudioToolbox/AudioToolbox.h>
+#import "BackgroundGeolocationDelegate.h"
 
-enum CDVLocationStatus {
-    PERMISSIONDENIED = 1,
-    POSITIONUNAVAILABLE,
-    TIMEOUT
-};
-typedef NSUInteger CDVLocationStatus;
-
-@interface CDVBackgroundGeolocation : CDVPlugin <CLLocationManagerDelegate>
+@interface CDVBackgroundGeolocation : CDVPlugin
 
 @property (nonatomic, strong) NSString* syncCallbackId;
-@property (nonatomic, strong) NSMutableArray* stationaryRegionListeners;
+@property (nonatomic, strong) BackgroundGeolocationDelegate* bgDelegate;
 
 - (void) configure:(CDVInvokedUrlCommand*)command;
 - (void) start:(CDVInvokedUrlCommand*)command;
