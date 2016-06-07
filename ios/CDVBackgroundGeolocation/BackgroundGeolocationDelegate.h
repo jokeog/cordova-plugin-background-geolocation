@@ -32,7 +32,7 @@ typedef NSUInteger BGLocationStatus;
 - (void) stop;
 - (void) finish;
 - (void) onPaceChange:(BOOL)moving;
-- (void) setConfig:(NSDictionary*)config;
+//- (void) setConfig:(NSDictionary*)config;
 // - (void) addStationaryRegionListener:(CDVInvokedUrlCommand*)command;
 // - (void) getStationaryLocation:(CDVInvokedUrlCommand *)command;
 - (BOOL) isLocationEnabled;

@@ -44,19 +44,19 @@
 //    }
 }
 
-- (void) setConfig:(CDVInvokedUrlCommand*)command
-{
-    NSLog(@"- CDVBackgroundGeolocation setConfig");
-    NSDictionary *config = [command.arguments objectAtIndex:0];
-
-    [self.commandDelegate runInBackground:^{
-        [bgDelegate setConfig:config];
-        
-        CDVPluginResult* result = nil;
-        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
-        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
-    }];
-}
+//- (void) setConfig:(CDVInvokedUrlCommand*)command
+//{
+//    NSLog(@"- CDVBackgroundGeolocation setConfig");
+//    NSDictionary *config = [command.arguments objectAtIndex:0];
+//
+//    [self.commandDelegate runInBackground:^{
+//        [bgDelegate setConfig:config];
+//        
+//        CDVPluginResult* result = nil;
+//        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK];
+//        [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
+//    }];
+//}
 
 /**
  * Turn on background geolocation
@@ -158,6 +158,84 @@
 - (void) deleteAllLocations:(CDVInvokedUrlCommand*)command
 {
     // TODO: yet to be implemented    
+}
+
+/**
+ * Called by js to signify the end of a background-geolocation event
+ */
+-(void) finish:(CDVInvokedUrlCommand*)command
+{
+    NSLog(@"- CDVBackgroundGeoLocation finish");
+    [bgDelegate finish];
+}
+
+/**
+ * Suspend.  Turn on passive location services
+ */
+-(void) onSuspend:(NSNotification *) notification
+{
+//    NSLog(@"- CDVBackgroundGeoLocation suspend (enabled? %d)", enabled);
+//    suspendedAt = [NSDate date];
+//    
+//    if (enabled) {
+//        // Sample incoming stationary-location candidate:  Is it within the current stationary-region?  If not, I guess we're moving.
+//        if (!isMoving && stationaryRegion) {
+//            if ([self locationAge:stationaryLocation] < (5 * 60.0)) {
+//                if (isDebugging) {
+//                    AudioServicesPlaySystemSound (acquiredLocationSound);
+//                    [self notify:[NSString stringWithFormat:@"Continue stationary\n%f,%f", [stationaryLocation coordinate].latitude, [stationaryLocation coordinate].longitude]];
+//                }
+//                [self queue:stationaryLocation type:@"stationary"];
+//                return;
+//            }
+//        }
+//        [self setPace: isMoving];
+//    }
+}
+
+/**@
+ * Resume.  Turn background off
+ */
+-(void) onResume:(NSNotification *) notification
+{
+    NSLog(@"- CDVBackgroundGeoLocation resume");
+//    if (enabled) {
+//        [self stopUpdatingLocation];
+//    }
+}
+
+/**@
+ * Termination. Checks to see if it should turn off
+ */
+-(void) onAppTerminate
+{
+    NSLog(@"- CDVBackgroundGeoLocation appTerminate");
+//    if (enabled && stopOnTerminate) {
+//        NSLog(@"- CDVBackgroundGeoLocation stoping on terminate");
+//        
+//        enabled = NO;
+//        isMoving = NO;
+//        
+//        [self stopUpdatingLocation];
+//        [locationManager stopMonitoringSignificantLocationChanges];
+//        if (stationaryRegion != nil) {
+//            [locationManager stopMonitoringForRegion:stationaryRegion];
+//            stationaryRegion = nil;
+//        }
+//    }
+}
+
+/**
+ * If you don't stopMonitoring when application terminates, the app will be awoken still when a
+ * new location arrives, essentially monitoring the user's location even when they've killed the app.
+ * Might be desirable in certain apps.
+ */
+- (void)applicationWillTerminate:(UIApplication *)application {
+//    [locationManager stopMonitoringSignificantLocationChanges];
+//    [locationManager stopUpdatingLocation];
+//    if (stationaryRegion != nil) {
+//        [locationManager stopMonitoringForRegion:stationaryRegion];
+//    }
 }
 
 -(void (^)(NSMutableDictionary *location)) createLocationChangedHandler {

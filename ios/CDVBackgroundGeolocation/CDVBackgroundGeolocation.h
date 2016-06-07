@@ -17,9 +17,9 @@
 - (void) stop:(CDVInvokedUrlCommand*)command;
 - (void) finish:(CDVInvokedUrlCommand*)command;
 - (void) onPaceChange:(CDVInvokedUrlCommand*)command;
-- (void) setConfig:(CDVInvokedUrlCommand*)command;
-- (void) addStationaryRegionListener:(CDVInvokedUrlCommand*)command;
-- (void) getStationaryLocation:(CDVInvokedUrlCommand *)command;
+//- (void) setConfig:(CDVInvokedUrlCommand*)command;
+//- (void) addStationaryRegionListener:(CDVInvokedUrlCommand*)command;
+//- (void) getStationaryLocation:(CDVInvokedUrlCommand *)command;
 - (void) isLocationEnabled:(CDVInvokedUrlCommand*)command;
 - (void) showAppSettings:(CDVInvokedUrlCommand*)command;
 - (void) showLocationSettings:(CDVInvokedUrlCommand*)command;

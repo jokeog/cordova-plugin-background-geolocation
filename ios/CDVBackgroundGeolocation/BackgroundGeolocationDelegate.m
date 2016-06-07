@@ -10,7 +10,7 @@
 //  https://github.com/christocracy/cordova-plugin-background-geolocation
 //
 
-@import UIKit;
+#import <UIKit/UIKit.h>
 #import "BackgroundGeolocationDelegate.h"
 
 // Debug sounds for bg-geolocation life-cycle events.

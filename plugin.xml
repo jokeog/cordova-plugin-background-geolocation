@@ -125,6 +125,8 @@
         <framework src="AVFoundation.framework" weak="true" />
         <source-file src="ios/CDVBackgroundGeolocation/CDVBackgroundGeolocation.m" />
         <header-file src="ios/CDVBackgroundGeolocation/CDVBackgroundGeolocation.h" />
+        <source-file src="ios/CDVBackgroundGeolocation/BackgroundGeolocationDelegate.m" />
+        <header-file src="ios/CDVBackgroundGeolocation/BackgroundGeolocationDelegate.h" />
      </platform>
 
 </plugin>
