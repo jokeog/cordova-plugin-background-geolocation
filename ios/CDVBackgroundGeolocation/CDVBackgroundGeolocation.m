@@ -122,7 +122,10 @@
 
 - (void) isLocationEnabled:(CDVInvokedUrlCommand*)command
 {
-    // TODO: yet to be implemented
+    BOOL isLocationEnabled = [bgDelegate isLocationEnabled];
+    NSLog(@"- CDVBackgroundGeolocation isLocationEnabled %d", isLocationEnabled);
+    CDVPluginResult* result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsBool:isLocationEnabled];
+    [self.commandDelegate sendPluginResult:result callbackId:command.callbackId];
 }
 
 - (void) showAppSettings:(CDVInvokedUrlCommand*)command

@@ -177,7 +177,7 @@ Platform: iOS, Android
 Stop background geolocation.
 
 ### backgroundGeolocation.isLocationEnabled(success, fail)
-Platform: Android
+Platform: iOS, Android
 
 One time check for status of location services. In case of error, fail callback will be executed.
 

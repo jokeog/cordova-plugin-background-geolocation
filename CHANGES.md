@@ -9,6 +9,7 @@
 - Android bugfixing
 - SampleApp moved into separate repo
 - deprecated backgroundGeoLocation
+- iOS split cordova specific code to allow code sharing with react-native-background-geolocation
 
 #### Added
 - Android startOnBoot option
@@ -16,6 +17,7 @@
 - Android http posting of locations (options url and httpHeaders)
 - iOS showLocationSettings
 - iOS showAppSettings
+- iOS isLocationEnabled
 
 #### Removed
 - WP8 platform
