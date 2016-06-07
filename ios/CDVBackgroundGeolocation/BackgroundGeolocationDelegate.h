@@ -28,11 +28,11 @@ typedef NSUInteger BGLocationStatus;
 @property (copy) void (^onLocationChanged) (NSMutableDictionary *location);
 
 - (void) configure:(NSDictionary*)config;
+//- (void) setConfig:(NSDictionary*)config;
 - (void) start;
 - (void) stop;
 - (void) finish;
 - (void) onPaceChange:(BOOL)moving;
-//- (void) setConfig:(NSDictionary*)config;
 // - (void) addStationaryRegionListener:(CDVInvokedUrlCommand*)command;
 // - (void) getStationaryLocation:(CDVInvokedUrlCommand *)command;
 - (BOOL) isLocationEnabled;

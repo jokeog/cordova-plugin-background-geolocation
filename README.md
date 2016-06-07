@@ -136,8 +136,8 @@ Parameter | Type | Platform     | Description
 `option.notificationIconSmall` | `String` optional | Android | The filename of a custom notification icon. See android quirks.
 `option.locationProvider` | `Number` | Android | Set location provider **@see** [wiki](https://github.com/mauron85/cordova-plugin-background-geolocation/wiki/Android-providers)
 `option.activityType` | `String` | iOS | [AutomotiveNavigation, OtherNavigation, Fitness, Other] Presumably, this affects iOS GPS algorithm. **@see** [Apple docs](https://developer.apple.com/library/ios/documentation/CoreLocation/Reference/CLLocationManager_Class/CLLocationManager/CLLocationManager.html#//apple_ref/occ/instp/CLLocationManager/activityType) for more information
-`options.url` | `String` | Android | Server url where to send HTTP POST with recorded locations
-`options.httpHeaders` | `Object` | Android | Optional HTTP headers sent along in HTTP request
+`options.url` | `String` | iOS, Android | Server url where to send HTTP POST with recorded locations
+`options.httpHeaders` | `Object` | iOS, Android | Optional HTTP headers sent along in HTTP request
 
 Following options are specific to provider as defined by locationProvider option
 ### ANDROID_ACTIVITY_PROVIDER provider options

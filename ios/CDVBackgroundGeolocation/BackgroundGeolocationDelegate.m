@@ -38,33 +38,30 @@
 @implementation BackgroundGeolocationDelegate {
     BOOL enabled;
     BOOL isUpdatingLocation;
-
-    UIBackgroundTaskIdentifier bgTask;
-    NSDate *lastBgTaskAt;
-
-    NSError *locationError;
-
     BOOL isMoving;
+    BOOL isAcquiringStationaryLocation;
+    BOOL isAcquiringSpeed;
 
-    NSNumber *maxBackgroundHours;
-    CLLocationManager *locationManager;
-    UILocalNotification *localNotification;
+    NSInteger locationAcquisitionAttempts;
+    NSInteger maxStationaryLocationAttempts;
+    NSInteger maxSpeedAcquistionAttempts;
 
     CLLocation *lastLocation;
     NSMutableArray *locationQueue;
-
+    NSError *locationError;
     NSDate *suspendedAt;
 
+    CLLocationManager *locationManager;
     CLLocation *stationaryLocation;
     CLCircularRegion *stationaryRegion;
-    NSInteger locationAcquisitionAttempts;
 
-    BOOL isAcquiringStationaryLocation;
-    NSInteger maxStationaryLocationAttempts;
+    UILocalNotification *localNotification;
+    
+    NSNumber *maxBackgroundHours;
+    UIBackgroundTaskIdentifier bgTask;
+    NSDate *lastBgTaskAt;
 
-    BOOL isAcquiringSpeed;
-    NSInteger maxSpeedAcquistionAttempts;
-
+    // configurable options
     NSInteger stationaryRadius;
     NSInteger distanceFilter;
     NSInteger locationTimeout;
@@ -72,6 +69,7 @@
     BOOL isDebugging;
     NSString* activityType;
     BOOL stopOnTerminate;
+    NSString* url;
 }
 
 @synthesize stationaryRegionListeners;
@@ -87,12 +85,10 @@
     // background location cache, for when no network is detected.
     locationManager = [[CLLocationManager alloc] init];
 
-    //Edited by kingalione: START
     if (SYSTEM_VERSION_GREATER_THAN_OR_EQUAL_TO(@"9.0")) {
         NSLog(@"BackgroundGeolocationDelegate iOS9 detected");
         locationManager.allowsBackgroundLocationUpdates = YES;
     }
-    //Edited by kingalione: END
 
     locationManager.delegate = self;
 
@@ -106,6 +102,7 @@
     stationaryLocation = nil;
     stationaryRegion = nil;
 
+    // default config options
     stationaryRadius = 50;
     distanceFilter = 500;
     locationTimeout = 60;
@@ -114,13 +111,12 @@
     activityType = @"OTHER";
     stopOnTerminate = NO;
 
-    maxStationaryLocationAttempts   = 4;
-    maxSpeedAcquistionAttempts      = 3;
+    maxStationaryLocationAttempts = 4;
+    maxSpeedAcquistionAttempts = 3;
 
     bgTask = UIBackgroundTaskInvalid;
 
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onSuspend:) name:UIApplicationDidEnterBackgroundNotification object:nil];
-
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(onResume:) name:UIApplicationWillEnterForegroundNotification object:nil];
 
     return self;
@@ -176,13 +172,16 @@
     if (config[@"stopOnTerminate"]) {
         stopOnTerminate = [config[@"stopOnTerminate"] boolValue];
     }
-
+    if (config[@"url"]) {
+        url = config[@"url"];
+    }
+    
     locationManager.activityType = [self decodeActivityType:activityType];
     locationManager.pausesLocationUpdatesAutomatically = YES;
     locationManager.distanceFilter = distanceFilter; // meters
     locationManager.desiredAccuracy = desiredAccuracy;
 
-    NSLog(@"distanceFilter: %ld, stationaryRadius: %ld, locationTimeout: %ld, desiredAccuracy: %ld, activityType: %@, debug: %d, stopOnTerminate: %d", (long)distanceFilter, (long)stationaryRadius, (long)locationTimeout, (long)desiredAccuracy, activityType, isDebugging, stopOnTerminate);
+    NSLog(@"distanceFilter: %ld, stationaryRadius: %ld, locationTimeout: %ld, desiredAccuracy: %ld, activityType: %@, debug: %d, stopOnTerminate: %d, url: %@", (long)distanceFilter, (long)stationaryRadius, (long)locationTimeout, (long)desiredAccuracy, activityType, isDebugging, stopOnTerminate, url);
 
     // ios 8 requires permissions to send local-notifications
     if (isDebugging) {
@@ -192,6 +191,28 @@
         }
     }
 }
+
+//- (void) setConfig:(NSDictionary*)config
+//{
+//    NSLog(@"BackgroundGeolocationDelegate setConfig");
+//
+//    if (config[@"desiredAccuracy"]) {
+//        desiredAccuracy = [self decodeDesiredAccuracy:[config[@"desiredAccuracy"] floatValue]];
+//        NSLog(@"desiredAccuracy: %@", config[@"desiredAccuracy"]);
+//    }
+//    if (config[@"stationaryRadius"]) {
+//        stationaryRadius = [config[@"stationaryRadius"] intValue];
+//        NSLog(@"stationaryRadius: %@", config[@"stationaryRadius"]);
+//    }
+//    if (config[@"distanceFilter"]) {
+//        distanceFilter = [config[@"distanceFilter"] intValue];
+//        NSLog(@"distanceFilter: %@", config[@"distanceFilter"]);
+//    }
+//    if (config[@"locationTimeout"]) {
+//        locationTimeout = [config[@"locationTimeout"] intValue];
+//        NSLog(@"locationTimeout: %@", config[@"locationTimeout"]);
+//    }
+//}
 
 // - (void) addStationaryRegionListener:(CDVInvokedUrlCommand*)command
 // {
@@ -229,47 +250,22 @@
     }
 }
 
-//- (void) setConfig:(NSDictionary*)config
-//{
-//    NSLog(@"BackgroundGeolocationDelegate setConfig");
-//
-//    if (config[@"desiredAccuracy"]) {
-//        desiredAccuracy = [self decodeDesiredAccuracy:[config[@"desiredAccuracy"] floatValue]];
-//        NSLog(@"desiredAccuracy: %@", config[@"desiredAccuracy"]);
-//    }
-//    if (config[@"stationaryRadius"]) {
-//        stationaryRadius = [config[@"stationaryRadius"] intValue];
-//        NSLog(@"stationaryRadius: %@", config[@"stationaryRadius"]);
-//    }
-//    if (config[@"distanceFilter"]) {
-//        distanceFilter = [config[@"distanceFilter"] intValue];
-//        NSLog(@"distanceFilter: %@", config[@"distanceFilter"]);
-//    }
-//    if (config[@"locationTimeout"]) {
-//        locationTimeout = [config[@"locationTimeout"] intValue];
-//        NSLog(@"locationTimeout: %@", config[@"locationTimeout"]);
-//    }
-//}
-
 -(NSInteger)decodeDesiredAccuracy:(NSInteger)accuracy
 {
-    switch (accuracy) {
-        case 1000:
-            accuracy = kCLLocationAccuracyKilometer;
-            break;
-        case 100:
-            accuracy = kCLLocationAccuracyHundredMeters;
-            break;
-        case 10:
-            accuracy = kCLLocationAccuracyNearestTenMeters;
-            break;
-        case 0:
-            accuracy = kCLLocationAccuracyBest;
-            break;
-        default:
-            accuracy = kCLLocationAccuracyHundredMeters;
+    if (accuracy >= 1000) {
+        return kCLLocationAccuracyKilometer;
     }
-    return accuracy;
+    if (accuracy >= 100) {
+        return kCLLocationAccuracyHundredMeters;
+    }
+    if (accuracy >= 10) {
+        return kCLLocationAccuracyNearestTenMeters;
+    }
+    if (accuracy >= 0) {
+        return kCLLocationAccuracyBest;
+    }
+
+    return kCLLocationAccuracyHundredMeters;
 }
 
 -(CLActivityType)decodeActivityType:(NSString*)name
@@ -738,6 +734,10 @@
     } else if ([locationType isEqualToString:@"current"]) {
 
         self.onLocationChanged(data);
+        if (url != nil) {
+            // TODO: handle post failure -> persist location
+            [self postJSON:data];
+        }
 //        CDVPluginResult* result = nil;
 //        result = [CDVPluginResult resultWithStatus:CDVCommandStatus_OK messageAsDictionary:data];
 //        [result setKeepCallbackAsBool:YES];
@@ -919,6 +919,28 @@
     localNotification.alertBody = message;
     [[UIApplication sharedApplication] scheduleLocalNotification:localNotification];
 }
+
+- (BOOL) postJSON:(NSMutableDictionary*)dictionary
+{
+    NSData *data = [NSJSONSerialization dataWithJSONObject:dictionary options:NSJSONWritingPrettyPrinted error:nil];
+    NSString *jsonStr = [[NSString alloc] initWithData:data encoding:NSUTF8StringEncoding];
+    NSMutableURLRequest *request = [NSMutableURLRequest requestWithURL:[NSURL URLWithString:url]];
+    [request setValue:@"application/json" forHTTPHeaderField:@"Content-Type"];
+    [request setHTTPMethod:@"POST"];
+    [request setHTTPBody:[jsonStr dataUsingEncoding:NSUTF8StringEncoding]];
+
+    // Create url connection and fire request
+    NSHTTPURLResponse* urlResponse = nil;
+    NSError *error = nil;
+    NSData *response = [NSURLConnection sendSynchronousRequest:request returningResponse:&urlResponse error:&error];
+    
+    if (error == nil && [urlResponse statusCode] == 200) {
+        return YES;
+    }
+
+    return NO;
+}
+
 /**
  * If you don't stopMonitoring when application terminates, the app will be awoken still when a
  * new location arrives, essentially monitoring the user's location even when they've killed the app.
